@@ -23,12 +23,8 @@ CON  { pins used in this object }
   ENC_A     = 16    { I }                               'rotary encoder inputs
   ENC_B     = 17    { I }
   SWITCH    = 18    { I }                               'encoder push switch
-  TICK_PIN  = 0     { IO }                              'pin we use for tick trigger
 '------------------------------------------------------------------------------
 CON  { other constants used in this object }
-  TICK_MS       = 1                                     'tick interval
-  TICK_MASK     = |< TICK_PIN                           'pin mask for waitpne
-
   ENC_TICKS     = 5                                     'tick intervals for tasks
   SWITCH_TICKS  = 25
   
