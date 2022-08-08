@@ -17,51 +17,47 @@
   The getXX methods will return position, direction, delta, and switch position.
   getDelta with return the delta since last called and optionaly reset the delta.
 }}
-
-'------------------------------------------------------------------------------
-CON  { pins used in this object }
-  ENC_A     = 16    { I }                               'rotary encoder inputs
-  ENC_B     = 17    { I }
-  SWITCH    = 18    { I }                               'encoder push switch
 '------------------------------------------------------------------------------
 CON  { other constants used in this object }
-  ENC_TICKS     = 5                                     'tick intervals for tasks
-  SWITCH_TICKS  = 25
-  
-  ENC_START     = 0                                     'starting offsets for tasks, keeps them from running in same tick
-  SWITCH_START  = 1 
-  
+
   CW            = 1
   CCW           = -1
+  
 '------------------------------------------------------------------------------
 VAR
   long prev_a
   long enc_pos
   long enc_dir
-  long enc_cnt
 
   long prev_switch
   long switch_pressed
-  long switch_cnt
-  
+
   long prev_pos
+  
 '------------------------------------------------------------------------------
 PUB null ' this is not a stand alone object
 
 '------------------------------------------------------------------------------
-PUB setup
-  prev_a := ina[ENC_A]                                  'get initial states
-  prev_switch := ina[SWITCH]
-      
+PUB setup(enc_a_pin, enc_b_pin, switch_pin)
+  dira[enc_a_pin]~
+  dira[enc_b_pin]~
+  dira[switch_pin]~
+
+  prev_a := ina[enc_a_pin]                                  'get initial states
+  prev_switch := ina[switch_pin]
+
 '------------------------------------------------------------------------------
 PUB getSw : state
   return switch_pressed
+  
 '------------------------------------------------------------------------------
 PUB getPos : position
   return enc_pos
+  
 '------------------------------------------------------------------------------
 PUB getDir : direction
   return enc_dir
+  
 '------------------------------------------------------------------------------
 PUB getDelta(reset) : delta
   delta := enc_pos - prev_pos
@@ -71,23 +67,22 @@ PUB getDelta(reset) : delta
 
 '------------------------------------------------------------------------------
 PUB readSwitch | cur_switch     ''reads the knob push switch, must be called regularly at a frequency that will debounce, every 20-25ms is good
-  dira[SWITCH]~
+  dira[switch_pin]~
 
-  switch_cnt := 0
-  cur_switch := ina[SWITCH]
+  cur_switch := ina[switch_pin]
 
   if prev_switch == cur_switch                       'if the switch state has been the same for 2 cycles
-    switch_pressed :=  NOT cur_switch                'it's considered debounced and valid
+    switch_pressed := NOT cur_switch                'it's considered debounced and valid
 
   prev_switch := cur_switch
-  
+
 
 '------------------------------------------------------------------------------
-PUB readEncoder | cur_state, cur_a, cur_b     ''reads the encoder position, must be called frequently, every 5-10ms is good  
-  dira[ENC_A]~
-  dira[ENC_B]~
+PUB readEncoder | cur_state, cur_a, cur_b     ''reads the encoder position, must be called frequently, every 5-10ms is good
+  dira[enc_a_pin]~
+  dira[enc_b_pin]~
 
-  cur_state := ina[ENC_A..ENC_B]                      'get the current encoder output and separate the a and b phase states
+  cur_state := ina[enc_a_pin..enc_b_pin]                      'get the current encoder output and separate the a and b phase states
   cur_b := cur_state & %01                            'and out a to leave b
   cur_a := cur_state >> 1                             'shift out b to leave a
 
@@ -100,7 +95,7 @@ PUB readEncoder | cur_state, cur_a, cur_b     ''reads the encoder position, must
       enc_dir := CCW
 
   prev_a := cur_a
-  
+
 '------------------------------------------------------------------------------
 CON { license }
 
